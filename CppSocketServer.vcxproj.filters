@@ -40,6 +40,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="_.gitignore" />
+    <None Include=".gitignore" />
   </ItemGroup>
 </Project>
