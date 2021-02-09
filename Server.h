@@ -3,6 +3,7 @@
 #include <WinSock2.h>
 #include <Windows.h>
 #include "Helper.h"
+#include <thread>
 
 
 class Server
@@ -18,4 +19,6 @@ private:
 	void clientHandler(SOCKET clientSocket);
 
 	SOCKET _serverSocket;
+
+	void client(SOCKET clientSocket);
 };

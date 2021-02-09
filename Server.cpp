@@ -94,30 +94,56 @@ void Server::clientHandler(SOCKET clientSocket)
 {
 	try
 	{
-		std::string s = "Welcome! What is your name (4 bytes)? ";
-		send(clientSocket, s.c_str(), s.size(), 0);  // last parameter: flag. for us will be 0.
-
-		// get client name by Helper
-		int code = Helper::getMessageTypeCode(clientSocket);
-		std::string name;
-		if (code == 200)
-		{
-			int len = Helper::getIntPartFromSocket(clientSocket, 2);
-			name = Helper::getStringPartFromSocket(clientSocket, len);
-		}
-
-		std::cout << "Client name is: " << name << std::endl;
-
-		s = "Bye";
-		send(clientSocket, s.c_str(), s.size(), 0);
-
-		// Closing the socket (in the level of the TCP protocol)
-		closesocket(clientSocket);
+		std::thread clientThread(&Server::client, this, clientSocket);
+		clientThread.detach();
+		std::cout << "New client thread has been started!" << std::endl;
 	}
 	catch (const std::exception& e)
 	{
 		closesocket(clientSocket);
 	}
+}
 
+void Server::client(SOCKET clientSocket)
+{
+	try
+	{
+		std::string name;
+		
+		while (true)
+		{
+			int code = Helper::getMessageTypeCode(clientSocket);
+			if (code == 200)	// MT_CLIENT_LOG_IN
+			{
+				int len = Helper::getIntPartFromSocket(clientSocket, 2);
+				name = Helper::getStringPartFromSocket(clientSocket, len);
+				std::cout << "Hello new client " << name << "!" << std::endl;
+				Helper::send_update_message_to_client(clientSocket, "", "", "shimon&moshe&ithik");
+			}
 
+			if (code == 204)	// MT_CLIENT_UPDATE
+			{	
+				int len = Helper::getIntPartFromSocket(clientSocket, 2);
+				std::string userName = Helper::getStringPartFromSocket(clientSocket, len);
+				len = Helper::getIntPartFromSocket(clientSocket, 5);
+				std::string userMess = Helper::getStringPartFromSocket(clientSocket, len);
+				std::cout << "New message from: " << name << " to: " << userName << " message: " << userMess << std::endl;
+				Helper::sendData(clientSocket, userMess);
+			}
+
+			if (code == 207)	// MT_CLIENT_FINISH
+			{	
+				// ...
+			}
+
+			if (code == 208)	// MT_CLIENT_EXIT
+			{	
+				// ...
+			}
+		}
+	}
+	catch (...)
+	{
+		closesocket(clientSocket);
+	}
 }
