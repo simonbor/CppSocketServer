@@ -106,13 +106,14 @@ void Server::clientHandler(SOCKET clientSocket)
 
 void Server::client(SOCKET clientSocket)
 {
+	std::string name;
 	try
-	{
-		std::string name;
-		
+	{		
 		while (true)
 		{
 			int code = Helper::getMessageTypeCode(clientSocket);
+			std::cout << ">>> Code # " << code << " arrived" << std::endl;
+
 			if (code == 200)	// MT_CLIENT_LOG_IN
 			{
 				int len = Helper::getIntPartFromSocket(clientSocket, 2);
@@ -144,6 +145,7 @@ void Server::client(SOCKET clientSocket)
 	}
 	catch (...)
 	{
+		std::cout << "Socket of client " << name << " has been closed" << std::endl;
 		closesocket(clientSocket);
 	}
 }
